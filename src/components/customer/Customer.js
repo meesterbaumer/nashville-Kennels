@@ -1,9 +1,9 @@
 import React from "react"
 import "./Customer.css"
 
-export const Customer = () => (
+export const Customer = ({customer}) => (
   <section className="customer">
-    <h3 className="customer__name">Courtney</h3>
-    <div className="customer__address">address: 100 Infinity Way</div>
+    <h3 className="customer__name">{customer.name}</h3>
+    <div className="customer__address">{customer.address}</div>
   </section>
 )
