@@ -4,7 +4,7 @@ import { LocationContext } from "../location/LocationProvider"
 import { AnimalContext } from "../animal/AnimalProvider"
 import "./Employee.css"
 
-export const EmployeeForm = (burrito) => {
+export const EmployeeForm = (props) => {
     const { addEmployee } = useContext(EmployeeContext)
     const { locations, getLocations } = useContext(LocationContext)
     const { animals, getAnimals } = useContext(AnimalContext)
@@ -45,7 +45,7 @@ export const EmployeeForm = (burrito) => {
                 locationId,
                 animalId
             })
-            .then(() => burrito.history.push("/employees"))
+            .then(() => props.history.push("/employees"))
         }
     }
 
