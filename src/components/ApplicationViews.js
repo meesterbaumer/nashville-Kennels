@@ -37,6 +37,13 @@ export const ApplicationViews = (props) => {
               </Route>
             </CustomerProvider>
 
+            <Route path="/logout" render={
+                (props) => {
+                    localStorage.removeItem("kennel_customer")
+                    props.history.push("/login")
+                }
+            } />
+
             <EmployeeProvider>
                 <AnimalProvider>
                     <LocationProvider>
