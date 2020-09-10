@@ -4,6 +4,7 @@ import "./Animal.css"
 
 export const AnimalDetails = (props) => {
     const { releaseAnimal, getAnimalById } = useContext(AnimalContext)
+    
 
     const [animal, setAnimal] = useState({ location: {}, customer: {}})
 
