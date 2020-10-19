@@ -1,99 +1,148 @@
-import React, { useContext, useRef, useEffect } from "react"
-import { CustomerContext } from "../customer/CustomerProvider";
-import { AnimalContext } from "./AnimalProvider"
-import { LocationContext } from "../location/LocationProvider" 
-import "./Animal.css"
-
+import React, { useContext, useEffect, useState } from "react";
+import { AnimalContext } from "./AnimalProvider";
+import { LocationContext } from "../location/LocationProvider";
+import "./Animal.css";
 
 export const AnimalForm = (props) => {
-  const { addAnimal } =useContext(AnimalContext)
-  const { locations, getLocations } = useContext(LocationContext)
-  const { customers, getCustomers } = useContext(CustomerContext)
+  const { addAnimal, animals, updateAnimal, getAnimals } = useContext(
+    AnimalContext
+  );
+  const { locations, getLocations } = useContext(LocationContext);
 
-  const name = useRef(null)
-  const customer = useRef(null)
-  const location = useRef(null)
-  const breed = useRef(null)
+  const [animal, setAnimal] = useState({});
 
+  const editMode = props.match.params.hasOwnProperty("animalId");
+
+  const handleControlledInputChange = (event) => {
+    const newAnimal = Object.assign({}, animal);
+    newAnimal[event.target.name] = event.target.value;
+    setAnimal(newAnimal);
+  };
+
+  const getAnimalInEditMode = () => {
+    if (editMode) {
+      const animalId = parseInt(props.match.params.animalId);
+      const selectedAnimal = animals.find((a) => a.id === animalId) || {};
+      setAnimal(selectedAnimal);
+    }
+  };
 
   useEffect(() => {
-    getCustomers().then(getLocations)
-  }, [])
+    getAnimals();
+    getLocations();
+  }, []);
+
+  useEffect(() => {
+    getAnimalInEditMode();
+  }, [animals]);
 
   const admitAnimal = () => {
-    const locationId = parseInt(location.current.value)
-    const customerId = parseInt(customer.current.value)
+    const locationId = parseInt(animal.locationId);
 
-    if (locationId === 0 && customerId === 0) {
-      window.alert("Please select a Location and Customer")
-    } else if(locationId === 0 || customerId === 0) {
-      window.alert("Please complete all required info")
+    if (locationId === 0) {
+      window.alert("Please select a Location");
     } else {
-        const newAnimal = {
-          name: name.current.value,
-          breed: breed.current.value,
+      if (editMode) {
+        updateAnimal({
+          id: animal.id,
+          name: animal.name,
+          breed: animal.breed,
           locationId: locationId,
-          treatment: "",
-          customerId: customerId
+          status: animal.status,
+          customerId: parseInt(localStorage.getItem("kennel_customer")),
+        }).then(() => props.history.push("/animals"));
+      } else {
+        addAnimal({
+          name: animal.name,
+          breed: animal.breed,
+          locationId: locationId,
+          status: animal.status,
+          customerId: parseInt(localStorage.getItem("kennel_customer")),
+        }).then(() => props.history.push("/animals"));
+      }
     }
-
-    addAnimal(newAnimal).then(() => {
-      props.history.push("/animals")
-    })
-
-    }
-  }
+  };
 
   return (
     <form>
-    <fieldset>
+      <h2 className="animalForm__title">
+        {editMode ? "Update Animal" : "Admit Animal"}
+      </h2>
+      <fieldset>
         <div className="form-group">
-            <label htmlFor="animalName">Animal name: </label>
-            <input type="text" id="animalName" ref={name} required autoFocus className="form-control" placeholder="Animal name" />
+          <label htmlFor="animalName">Animal name: </label>
+          <input
+            type="text"
+            name="name"
+            id="animalName"
+            required
+            autoFocus
+            className="form-control"
+            placeholder="Animal name"
+            defaultValue={animal.name}
+            onChange={handleControlledInputChange}
+          />
         </div>
-    </fieldset>
-    <fieldset>
+      </fieldset>
+      <fieldset>
         <div className="form-group">
-            <label htmlFor="breed">Breed: </label>
-            <input type="text" id="breed" ref={breed} required autoFocus className="form-control" placeholder="Breed of animal" />
+          <label htmlFor="breed">Breed: </label>
+          <input
+            type="text"
+            name="breed"
+            id="breed"
+            required
+            autoFocus
+            className="form-control"
+            placeholder="Breed of animal"
+            defaultValue={animal.breed}
+            onChange={handleControlledInputChange}
+          />
         </div>
-    </fieldset>
-    <fieldset>
+      </fieldset>
+      <fieldset>
         <div className="form-group">
-            <label htmlFor="location">Assign to location: </label>
-            <select defaultValue="" name="location" ref={location} id="animalLocation" className="form-control" >
-                <option value="0">Select a location</option>
-                {locations.map(e => (
-                    <option key={e.id} value={e.id}>
-                        {e.name}
-                    </option>
-                ))}
-            </select>
+          <label htmlFor="locationId">Assign to location: </label>
+          <select
+            proptype="int"
+            value={animal.locationId}
+            onChange={handleControlledInputChange}
+            name="locationId"
+            id="animalLocation"
+            className="form-control"
+          >
+            <option value="0">Select a location</option>
+            {locations.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.name}
+              </option>
+            ))}
+          </select>
         </div>
-    </fieldset>
-    <fieldset>
+      </fieldset>
+      <fieldset>
         <div className="form-group">
-            <label htmlFor="customer">Brought in by: </label>
-            <select defaultValue="" name="customer" ref={customer} className="form-control" >
-                <option value="0">Select a customer</option>
-                {customers.map(customer => (
-                    <option key={customer.id} value={customer.id}>
-                        {customer.name}
-                    </option>
-                ))}
-            </select>
+          <label htmlFor="status">Treatments: </label>
+          <textarea
+            type="text"
+            name="ststus"
+            className="form-control"
+            proptype="varchar"
+            value={animal.status}
+            onChange={handleControlledInputChange}
+          ></textarea>
         </div>
-    </fieldset>
-    <button type="submit"
-        onClick={evt => {
-            evt.preventDefault()
-            admitAnimal()
+      </fieldset>
+      <button
+        type="submit"
+        onClick={(evt) => {
+          evt.preventDefault();
+          admitAnimal();
         }}
-        className="btn btn-primary">
-        Admit Animal
-    </button>
-</form>
-    )
-
-}
-
+        className="btn btn-primary"
+      >
+        {editMode ? "Save Updates" : "Make Reservation"}
+      </button>
+    </form>
+  );
+};
