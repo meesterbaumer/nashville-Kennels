@@ -125,7 +125,7 @@ export const AnimalForm = (props) => {
           <label htmlFor="status">Treatments: </label>
           <textarea
             type="text"
-            name="ststus"
+            name="status"
             className="form-control"
             proptype="varchar"
             value={animal.status}
